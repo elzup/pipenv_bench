@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
+docker build -t python_bench .
+
 main() {
-    pipenv install
-    pipenv run python ./work.py &
+    docker run -it --name python_bench_run python_bench
+
+    # force shutdown docker
+    docker kill python_bench_run
     
-    PID=$(pgrep -f ./work.py)
-    if [ ! -z "$PID" ]; then
-        echo "Killing my_script.py with PID $PID"
-        kill -9 $PID
-    else
-        echo "Process not found"
-    fi
 }
 
+docker_run() {
+    docker build .
+}
 
-for i in {1..10}
-do
-    main
-    sleep 1
-done
+main
+
+# for i in {1..10}
+# do
+#     main
+#     sleep 1
+# done
