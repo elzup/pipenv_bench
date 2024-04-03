@@ -1,20 +1,30 @@
 #!/usr/bin/env bash
 
-docker build -t python_bench .
 
 main() {
-    docker run -it --name python_bench_run python_bench
+   if [ "$(docker-compose ps -q python_bench)" ]; then
+        echo "skip"
+    else
+        docker-compose up -d python_bench
+    fi
 
     # force shutdown docker
-    docker kill python_bench_run
+    sleep 10
+    docker-compose down
+
     
 }
 
-docker_run() {
-    docker build .
-}
+
+docker build -t python_bench .
+
+set -x
+set +e
 
 main
+
+set -e
+set +x
 
 # for i in {1..10}
 # do
