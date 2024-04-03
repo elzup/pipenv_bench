@@ -1,33 +1,44 @@
 #!/usr/bin/env bash
 
+rand_sleep() {
+    sleep $((RANDOM % 11))
+    # sleep $(echo "scale=4; $RANDOM/32768" | bc)
+}
 
-main() {
-   if [ "$(docker-compose ps -q python_bench)" ]; then
-        echo "skip"
-    else
-        docker-compose up -d python_bench
-    fi
+start_docker() {
+    docker compose up -d
+    echo "-- run -----"
+    docker exec python_bench_run pipenv install
+    docker exec -d python_bench_run pipenv run python work.py
+    echo "-- --- -----"
+}
 
-    # force shutdown docker
-    sleep 10
-    docker-compose down
-
-    
+bad_kill_docker() {
+    docker compose stop -t 0
 }
 
 
-docker build -t python_bench .
+setup() {
+    if [ "$(docker compose ps -q python_bench)" ]; then
+        docker compose down
+    fi
+    docker compose build > /dev/null 2>&1
+}
 
-set -x
-set +e
+
+main() {
+    setup
+
+    set +e
+    # set -x +e
+    for i in {1..10}
+    do
+        start_docker
+        rand_sleep
+        bad_kill_docker
+    done
+    set -e
+}
+
 
 main
-
-set -e
-set +x
-
-# for i in {1..10}
-# do
-#     main
-#     sleep 1
-# done
